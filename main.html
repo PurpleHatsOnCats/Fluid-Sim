@@ -1,0 +1,71 @@
+<html>
+<!-- https://www.youtube.com/watch?v=7cYQFjQgTj4&list=PLSwCokO0cV859_dH4RgmXcKZRlIckBEmm&index=2 -->
+<head>
+    <title>2D Fluid Simulation</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        canvas {display: block; margin: 20px auto;}
+        body {background: #242321;}
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="1280px" height="720px" style="border:solid 1px black"></canvas>
+    <script src="src/playground.js"></script>
+    <script src="src/simulation.js"></script>
+
+    <script>
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+
+        let lastTime = performance.now();
+        let currentTime = 0;
+        let deltaTime = 0;
+
+        let playground = new Playground();
+
+        mainLoop();
+
+        function updatePlayground(dt){
+            playground.update(dt);
+            playground.draw();
+        }
+
+        function mainLoop(){
+            window.requestAnimationFrame(mainLoop);
+
+            currentTime = performance.now();
+            deltaTime = (currentTime - lastTime) / 1000;
+            
+
+            updatePlayground(deltaTime);
+            lastTime = currentTime;
+        }
+
+        function getMousePos(canvas, e){
+            let rect = canvas.getBoundingClientRect();
+            return{
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousemove',function(e){
+            let mouse = getMousePos(canvas,event);
+            playground.onMouseMove(mouse.x,mouse.y);
+        }, false);
+
+        canvas.addEventListener('mousedown',function(e){
+            playground.onMouseDown(e.button);
+        }, false);
+
+        canvas.addEventListener('mouseup',function(e){
+            playground.onMouseUp(e.button);
+        }, false);
+    </script>
+</body>
+
+</html>
