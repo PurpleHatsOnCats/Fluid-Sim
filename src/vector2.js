@@ -25,6 +25,9 @@ class Vector2{
     Log(){
         console.log("Vector2: ",this.x,this.y);
     }
+    Cpy(){
+        return new Vector2(this.x,this.y);
+    }
 
     static Zero(){
         return new Vector2(0,0);
@@ -32,10 +35,10 @@ class Vector2{
 }
 
 function Add(vecA, vecB){
-    return new Vectors(vecA.x + vecB.x, vecA.y + vecB.y)
+    return new Vector2(vecA.x + vecB.x, vecA.y + vecB.y)
 }
 function Sub(vecA, vecB){
-    return new Vectors(vecA.x - vecB.x, vecA.y - vecB.y)
+    return new Vector2(vecA.x - vecB.x, vecA.y - vecB.y)
 }
 function Scale(vec, scalar){
     return new Vector2(vec.x * scalar, vec.y * scalar);

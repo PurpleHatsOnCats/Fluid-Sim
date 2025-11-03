@@ -18,6 +18,7 @@
     <script src="src/simulation.js"></script>
     <script src="src/vector2.js"></script>
     <script src="src/drawUtils.js"></script>
+    <script src="src/particle.js"></script>
 
     <script>
         var canvas = document.getElementById("canvas");
@@ -32,6 +33,7 @@
         mainLoop();
 
         function updatePlayground(dt){
+            clear();
             playground.update(dt);
             playground.draw();
         }
@@ -45,6 +47,11 @@
 
             updatePlayground(deltaTime);
             lastTime = currentTime;
+        }
+
+        function clear(){
+            ctx.fillStyle = "#242321";
+            ctx.fillRect(0,0,canvas.width,canvas.height);
         }
 
         function getMousePos(canvas, e){
