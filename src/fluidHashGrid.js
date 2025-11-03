@@ -1,5 +1,5 @@
-class FluidHashGrid{
-    constructor(cellSize){
+class FluidHashGrid {
+    constructor(cellSize) {
         this.cellSize = cellSize;
         this.hashMap = new Map();
         this.hashmapSize = 100000000;
@@ -8,54 +8,75 @@ class FluidHashGrid{
         this.particles = [];
     }
 
-    initialize(particles){
+    initialize(particles) {
         this.particles = particles;
     }
 
-    clearGrid(){
+    clearGrid() {
         this.hashMap.clear();
     }
 
-    getGridIdFromPos(pos){
+    getGridIdFromPos(pos) {
         let x = parseInt(pos.x / this.cellSize);
         let y = parseInt(pos.y / this.cellSize);
 
-        return new Vector2(x,y);
+        return new Vector2(x, y);
     }
 
-    getGridHashFromPos(pos){
+    getGridHashFromPos(pos) {
         let x = parseInt(pos.x / this.cellSize);
         let y = parseInt(pos.y / this.cellSize);
 
-        return this.cellIndexToHash(x,y);
+        return this.cellIndexToHash(x, y);
     }
 
-    cellIndexToHash(x,y){
-        let hash = (x*this.prime1 ^ y * this.prime2) % this.hashmapSize;
+    cellIndexToHash(x, y) {
+        let hash = (x * this.prime1 ^ y * this.prime2) % this.hashmapSize;
         return hash;
     }
 
-    mapParticlesToCell(){
-        for(let i=0; i<this.particles.length; i++){
+    getNeighbourOfParticleId(i) {
+        let neighbours = [];
+        let pos = this.particles[i].position;
+
+        let particleGridX = parseInt(pos.x / this.cellSize);
+        let particleGridY = parseInt(pos.y / this.cellSize);
+
+        for(let x = -1; x <=1; x++){
+            for(let y= -1; y <=1; y++){
+                let gridX = particleGridX + x;
+                let gridY = particleGridY + y;
+
+                let hashId = this.cellIndexToHash(gridX,gridY);
+                let content = this.getContentOfCell(hashId);
+
+                neighbours.push(...content); // 3 dots iterates through the "content" array
+            }
+        }
+
+        return neighbours;
+    }
+    mapParticlesToCell() {
+        for (let i = 0; i < this.particles.length; i++) {
             let pos = this.particles[i].position;
             let hash = this.getGridHashFromPos(pos);
 
             let entries = this.hashMap.get(hash);
-            if(entries == null){
+            if (entries == null) {
                 let newArray = [this.particles[i]];
-                this.hashMap.set(hash,newArray);
-            }else{
+                this.hashMap.set(hash, newArray);
+            } else {
                 entries.push(this.particles[i]);
             }
         }
     }
 
-    getContentOfCell(id){
+    getContentOfCell(id) {
         let content = this.hashMap.get(id);
-        if(content == null){
+        if (content == null) {
             return [];
         }
-        else{
+        else {
             return content;
         }
     }

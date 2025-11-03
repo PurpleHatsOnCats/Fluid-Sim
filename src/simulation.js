@@ -24,27 +24,32 @@ class Simulation {
                     offsetAll.y + y * padding);
 
                 let particle = new Particle(position);
-                particle.velocity = Scale(new Vector2(
-                    - 0.5 + Math.random(),
-                    - 0.5 + Math.random()), 200);
+                // particle.velocity = Scale(new Vector2(
+                //     - 0.5 + Math.random(),
+                //     - 0.5 + Math.random()), 200);
 
                 this.particles.push(particle);
             }
         }
     }
 
-    neighbourSearch(mousePos){
+    neighbourSearch(mousePos) {
         this.fluidHashGrid.clearGrid();
         this.fluidHashGrid.mapParticlesToCell();
 
-        let gridHashId = this.fluidHashGrid.getGridHashFromPos(mousePos);
-        let contentOfCell = this.fluidHashGrid.getContentOfCell(gridHashId);
-        for(let i=0;i<this.particles.length; i++){
+        this.particles[0].position = mousePos.Cpy();
+        let contentOfCell = this.fluidHashGrid.getNeighbourOfParticleId(0);
+        for (let i = 0; i < this.particles.length; i++) {
             this.particles[i].color = "#28b0ff";
         }
-        for(let i=0;i<contentOfCell.length; i++){
+        for (let i = 0; i < contentOfCell.length; i++) {
             let particle = contentOfCell[i];
-            particle.color = "orange";
+
+            let direction = Sub(particle.position, mousePos);
+            let distanceSquared = direction.Length2();
+            if (distanceSquared < 25 * 25) {
+                particle.color = "orange";
+            }
         }
     }
 
@@ -53,7 +58,7 @@ class Simulation {
 
         this.predictPositions(dt);
         this.computeNextVelocity(dt);
-        
+
         this.worldBoundary();
     }
 
@@ -70,23 +75,23 @@ class Simulation {
             let velocity = Scale(Sub(this.particles[i].position, this.particles[i].prevPosition), 1.0 / dt);
             this.particles[i].velocity = velocity;
         }
-    } 
+    }
 
-    worldBoundary(){
-         for (let i = 0; i < this.particles.length; i++) {
+    worldBoundary() {
+        for (let i = 0; i < this.particles.length; i++) {
             let pos = this.particles[i].position;
 
-            if(pos.x < 0){
-                this.particles[i].velocity.x *=-1;
+            if (pos.x < 0) {
+                this.particles[i].velocity.x *= -1;
             }
-            if(pos.y < 0){
-                this.particles[i].velocity.y *=-1;
+            if (pos.y < 0) {
+                this.particles[i].velocity.y *= -1;
             }
-            if(pos.x > canvas.width){
-                this.particles[i].velocity.x *=-1;
+            if (pos.x > canvas.width) {
+                this.particles[i].velocity.x *= -1;
             }
-            if(pos.y > canvas.height){
-                this.particles[i].velocity.y *=-1;
+            if (pos.y > canvas.height) {
+                this.particles[i].velocity.y *= -1;
             }
         }
     }
