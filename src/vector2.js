@@ -30,3 +30,13 @@ class Vector2{
         return new Vector2(0,0);
     }
 }
+
+function Add(vecA, vecB){
+    return new Vectors(vecA.x + vecB.x, vecA.y + vecB.y)
+}
+function Sub(vecA, vecB){
+    return new Vectors(vecA.x - vecB.x, vecA.y - vecB.y)
+}
+function Scale(vec, scalar){
+    return new Vector2(vec.x * scalar, vec.y * scalar);
+}
