@@ -1,10 +1,11 @@
 class Playground {
     constructor() {
         this.simulation = new Simulation();
+        this.mousePos = Vector2.Zero();
     }
 
     update(dt) {
-        this.simulation.update(dt);
+        this.simulation.update(dt, this.mousePos);
     }
 
     draw() {
@@ -16,8 +17,9 @@ class Playground {
         // DrawUtils.drawRect(new Vector2(200,200), new Vector2(100,100), "green");
         // DrawUtils.drawText(new Vector2(300,300), 20, "white", "Hello World!");
     }
-    onMouseMove(x, y) {
-        console.log("Mouse moved to: " + x + ", " + y);
+    onMouseMove(position) {
+        console.log("Mouse moved to: " + position.x + ", " + position.y);
+        this.mousePos = position;
     }
 
     onMouseDown(button) {
