@@ -1,11 +1,17 @@
 class Simulation {
     constructor() {
         this.particles = [];
-        this.fluidHashGrid = new FluidHashGrid(25);
+
 
         this.AMOUNT_PARTICLES = 2000;
         this.VELOCITY_DAMPING = 1;
+        this.GRAVITY = new Vector2(0, 1);
+        this.REST_DESNITY = 10;
+        this.K_NEAR = 3;
+        this.K = 0.3;
+        this.INTERACTION_RADIUS = 25;
 
+        this.fluidHashGrid = new FluidHashGrid(this.INTERACTION_RADIUS);
         this.instantiateParticles();
         this.fluidHashGrid.initialize(this.particles);
     }
@@ -36,30 +42,72 @@ class Simulation {
     neighbourSearch(mousePos) {
         this.fluidHashGrid.clearGrid();
         this.fluidHashGrid.mapParticlesToCell();
+    }
 
-        this.particles[0].position = mousePos.Cpy();
-        let contentOfCell = this.fluidHashGrid.getNeighbourOfParticleId(0);
+    update(dt) {
+        this.applyGravity(dt);
+
+        this.predictPositions(dt);
+
+        this.neighbourSearch();
+
+        this.doubleDensityRelaxation(dt)
+
+        this.worldBoundary();
+
+        this.computeNextVelocity(dt);
+    }
+
+    doubleDensityRelaxation(dt) {
         for (let i = 0; i < this.particles.length; i++) {
-            this.particles[i].color = "#28b0ff";
-        }
-        for (let i = 0; i < contentOfCell.length; i++) {
-            let particle = contentOfCell[i];
+            let density = 0;
+            let densityNear = 0;
+            let neighbours = this.fluidHashGrid.getNeighbourOfParticleId(i);
+            let particleA = this.particles[i];
 
-            let direction = Sub(particle.position, mousePos);
-            let distanceSquared = direction.Length2();
-            if (distanceSquared < 25 * 25) {
-                particle.color = "orange";
+            for (let j = 0; j < neighbours.length; j++) {
+                let particleB = neighbours[j];
+                if (particleA == particleB) {
+                    continue;
+                }
+                let rij = Sub(particleB.position, particleA.position);
+                let q = rij.Length() / this.INTERACTION_RADIUS;
+
+                if (q < 1.0) {
+                    density += Math.pow(1 - q, 2);
+                    densityNear += Math.pow(1 - q, 3);
+                }
             }
+            let pressure = this.K * (density - this.REST_DESNITY);
+            let pressureNear = this.K_NEAR * densityNear;
+            let particleADisplacement = Vector2.Zero();
+
+            for (let j = 0; j < neighbours.length; j++) {
+                let particleB = neighbours[j];
+                if (particleA == particleB) {
+                    continue;
+                }
+                let rij = Sub(particleB.position, particleA.position);
+                let q = rij.Length() / this.INTERACTION_RADIUS;
+
+                if (q < 1.0) {
+                    rij.Normalize();
+                    let displacementTerm = Math.pow(dt, 2) *
+                        (pressure * (1 - q) + pressureNear * Math.pow(1 - q, 2));
+                    let D = Scale(rij, displacementTerm);
+
+                    particleB.position = Add(particleB.position, Scale(D, 0.5));
+                    particleADisplacement = Sub(particleADisplacement, Scale(D, 0.5));
+                }
+            }
+            particleA.position = Add(particleA.position, particleADisplacement);
         }
     }
 
-    update(dt, mousePos) {
-        this.neighbourSearch(mousePos);
-
-        this.predictPositions(dt);
-        this.computeNextVelocity(dt);
-
-        this.worldBoundary();
+    applyGravity(dt) {
+        for (let i = 0; i < this.particles.length; i++) {
+            this.particles[i].velocity = Add(this.particles[i].velocity, Scale(this.GRAVITY, dt));
+        }
     }
 
     predictPositions(dt) {
@@ -80,18 +128,23 @@ class Simulation {
     worldBoundary() {
         for (let i = 0; i < this.particles.length; i++) {
             let pos = this.particles[i].position;
+            let prevPos = this.particles[i].prevPosition;
 
             if (pos.x < 0) {
-                this.particles[i].velocity.x *= -1;
+                this.particles[i].position.x = 0;
+                this.particles[i].prevPosition.x = 0;
             }
             if (pos.y < 0) {
-                this.particles[i].velocity.y *= -1;
+                this.particles[i].position.y = 0;
+                this.particles[i].prevPosition.y = 0;
             }
             if (pos.x > canvas.width) {
-                this.particles[i].velocity.x *= -1;
+                this.particles[i].position.x = canvas.width - 1;
+                this.particles[i].prevPosition.x = canvas.width - 1;
             }
             if (pos.y > canvas.height) {
-                this.particles[i].velocity.y *= -1;
+                this.particles[i].position.y = canvas.height - 1;
+                this.particles[i].prevPosition.y = canvas.height - 1;
             }
         }
     }
