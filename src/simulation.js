@@ -2,29 +2,35 @@ class Simulation {
     constructor() {
         this.particles = [];
         this.particleEmitters = []
+        this.springs = new Map();
 
-        this.AMOUNT_PARTICLES = 2000;
+        this.AMOUNT_PARTICLES = 100;
         this.VELOCITY_DAMPING = 0.99;
         this.GRAVITY = new Vector2(0, 1);
         this.REST_DESNITY = 10;
         this.K_NEAR = 3;
-        this.K = 0.3;
+        this.K = 0.5;
         this.INTERACTION_RADIUS = 25;
 
         // viscouse parameter
-        this.SIGMA = 0.7;
+        this.SIGMA = 0.00;
         this.BETA = 0.00;
 
+        // plasticity parameters
+        this.GAMMA = 0.3;
+        this.PLASTICITY = 0.7;
+        this.SPRING_STIFFNESS = 0.4;
+
         this.fluidHashGrid = new FluidHashGrid(this.INTERACTION_RADIUS);
-        //this.instantiateParticles();
+        this.instantiateParticles();
         this.fluidHashGrid.initialize(this.particles);
 
         this.emitter = this.createParticleEmitter(
             new Vector2(canvas.width / 2, 400), // pos
-            new Vector2(0,-1), // dir n
+            new Vector2(0, -1), // dir n
             30,
             1,
-            20,
+            5,
             20
         );
     }
@@ -64,9 +70,10 @@ class Simulation {
     }
 
     update(dt) {
+        this.neighbourSearch();
 
-        this.emitter.spawn(dt, this.particles);
-        if(this.rotate){
+        if (this.rotate) {
+            this.emitter.spawn(dt, this.particles);
             this.emitter.rotate(0.01);
         }
 
@@ -76,7 +83,8 @@ class Simulation {
 
         this.predictPositions(dt);
 
-        this.neighbourSearch();
+        this.adjustSprings(dt);
+        this.springDisplacement(dt);
 
         this.doubleDensityRelaxation(dt)
 
@@ -85,13 +93,82 @@ class Simulation {
         this.computeNextVelocity(dt);
     }
 
+    adjustSprings(dt) {
+        for (let i = 0; i < this.particles.length; i++) {
+            let neighbours = this.fluidHashGrid.getNeighbourOfParticleId(i);
+            let particleA = this.particles[i];
+            for (let j = 0; j < neighbours.length; j++) {
+                let particleB = this.particles[neighbours[j]];
+                if (particleA == particleB) {
+                    continue;
+                }
+
+                // Prevent making too many springs
+                let springId = i + neighbours[j] * this.particles.length;
+                if (this.springs.has(springId)) {
+                    continue;
+                }
+                let rij = Sub(particleB.position, particleA.position);
+                let q = rij.Length() / this.INTERACTION_RADIUS;
+                if (q < 1) {
+                    let newSpring = new Spring(i, neighbours[j], this.INTERACTION_RADIUS);
+                    this.springs.set(springId, newSpring);
+                }
+            }
+
+        }
+        for (let [key, spring] of this.springs) {
+            let pi = this.particles[spring.particleAIdx];
+            let pj = this.particles[spring.particleBIdx];
+
+            let rij = Sub(pi.position, pj.position).Length();
+            let Lij = spring.length;
+            let d = this.GAMMA * Lij;
+
+            if (rij > Lij + d) { // stretching
+                spring.length += dt * this.PLASTICITY * (rij - Lij - d);
+            } else if (rij < Lij - d) { // compression
+                spring.length -= dt * this.PLASTICITY * (Lij - d - rij);
+            }
+
+            if (spring.length > this.INTERACTION_RADIUS) {
+                this.springs.delete(key);
+            }
+        }
+    }
+
+    springDisplacement(dt) {
+        let dtSquared = dt * dt;
+
+        for (let [key, spring] of this.springs) {
+            let pi = this.particles[spring.particleAIdx];
+            let pj = this.particles[spring.particleBIdx];
+
+            let rij = Sub(pi.position, pj.position);
+            let distance = rij.Length();
+
+            if (distance < 0.0001) {
+                continue; // prevent explosions
+            }
+
+            rij.Normalize();
+            let displacementTerm = dtSquared * this.SPRING_STIFFNESS * 
+                (1 - spring.length / this.INTERACTION_RADIUS) * (spring.length - distance);
+
+            rij = Scale(rij, displacementTerm * 0.5);
+
+            pi.position = Add(pi.position, rij);
+            pj.position = Sub(pj.position, rij);
+        }
+    }
+
     viscosity(dt) {
         for (let i = 0; i < this.particles.length; i++) {
             let neighbours = this.fluidHashGrid.getNeighbourOfParticleId(i);
             let particleA = this.particles[i];
 
             for (let j = 0; j < neighbours.length; j++) {
-                let particleB = neighbours[j];
+                let particleB = this.particles[neighbours[j]];
                 if (particleA == particleB) {
                     continue;
                 }
@@ -124,7 +201,7 @@ class Simulation {
             let particleA = this.particles[i];
 
             for (let j = 0; j < neighbours.length; j++) {
-                let particleB = neighbours[j];
+                let particleB = this.particles[neighbours[j]];
                 if (particleA == particleB) {
                     continue;
                 }
@@ -141,7 +218,7 @@ class Simulation {
             let particleADisplacement = Vector2.Zero();
 
             for (let j = 0; j < neighbours.length; j++) {
-                let particleB = neighbours[j];
+                let particleB = this.particles[neighbours[j]];
                 if (particleA == particleB) {
                     continue;
                 }
@@ -208,13 +285,14 @@ class Simulation {
     }
 
     draw() {
+        for (let i = 0; i < this.particleEmitters.length; i++) {
+            this.particleEmitters[i].draw();
+        }
         for (let i = 0; i < this.particles.length; i++) {
             let position = this.particles[i].position;
             let color = this.particles[i].color;
             DrawUtils.drawPoint(position, 3, color);
         }
-        for(let i=0; i<this.particleEmitters.length;i++){
-            this.particleEmitters[i].draw();
-        }
+        
     }
 }

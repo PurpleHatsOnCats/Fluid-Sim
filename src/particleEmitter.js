@@ -11,12 +11,11 @@ class ParticleEmitter {
     }
 
     spawn(dt, particles) {
-        let offset = (this.size * 2) / this.amount;
+        let offset = (this.size * 2) / (this.amount-1);
         this.time += dt;
 
         if (this.time > this.spawnInterval) {
             this.time = 0;
-
 
             let normal = this.direction.GetNormal();
             normal.Normalize();
@@ -24,6 +23,7 @@ class ParticleEmitter {
             let planeStart = Add(this.position, plane);
             let normalizedDir = this.direction.Cpy();
             normalizedDir.Normalize();
+
             for (let i = 0; i < this.amount; i++) {
                 let position = Add(planeStart, Scale(normal, offset * i));
                 let particle = new Particle(position);
@@ -57,7 +57,7 @@ class ParticleEmitter {
         let planeEnd = Sub(this.position, plane);
 
         DrawUtils.drawLine(planeStart, planeEnd, "orange");
-        let offset = (this.size * 2) / this.amount;
+        let offset = (this.size * 2) / (this.amount-1);
         for (let i = 0; i < this.amount; i++) {
             let circlePos = Add(planeStart, Scale(normal, offset * i));
             DrawUtils.drawPoint(circlePos, 5, "orange");
