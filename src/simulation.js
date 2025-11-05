@@ -1,7 +1,7 @@
 class Simulation {
     constructor() {
         this.particles = [];
-
+        this.particleEmitters = []
 
         this.AMOUNT_PARTICLES = 2000;
         this.VELOCITY_DAMPING = 0.99;
@@ -16,8 +16,23 @@ class Simulation {
         this.BETA = 0.00;
 
         this.fluidHashGrid = new FluidHashGrid(this.INTERACTION_RADIUS);
-        this.instantiateParticles();
+        //this.instantiateParticles();
         this.fluidHashGrid.initialize(this.particles);
+
+        this.emitter = this.createParticleEmitter(
+            new Vector2(canvas.width / 2, 400), // pos
+            new Vector2(0,-1), // dir n
+            30,
+            1,
+            20,
+            20
+        );
+    }
+
+    createParticleEmitter(position, direction, size, spawnInterval, amount, velocity) {
+        let emitter = new ParticleEmitter(position, direction, size, spawnInterval, amount, velocity);
+        this.particleEmitters.push(emitter);
+        return emitter;
     }
 
     instantiateParticles() {
@@ -49,6 +64,12 @@ class Simulation {
     }
 
     update(dt) {
+
+        this.emitter.spawn(dt, this.particles);
+        if(this.rotate){
+            this.emitter.rotate(0.01);
+        }
+
         this.applyGravity(dt);
 
         this.viscosity(dt);
@@ -64,7 +85,7 @@ class Simulation {
         this.computeNextVelocity(dt);
     }
 
-    viscosity(dt){
+    viscosity(dt) {
         for (let i = 0; i < this.particles.length; i++) {
             let neighbours = this.fluidHashGrid.getNeighbourOfParticleId(i);
             let particleA = this.particles[i];
@@ -79,16 +100,16 @@ class Simulation {
                 let velocityB = particleB.velocity;
                 let q = rij.Length() / this.INTERACTION_RADIUS;
 
-                if(q < 1){
+                if (q < 1) {
                     rij.Normalize();
                     let u = Sub(velocityA, velocityB).Dot(rij);
 
-                    if(u > 0){
-                       let ITerm = dt * (1-q) * (this.SIGMA * u + this.BETA * u * u); 
-                       let I = Scale(rij, ITerm);
+                    if (u > 0) {
+                        let ITerm = dt * (1 - q) * (this.SIGMA * u + this.BETA * u * u);
+                        let I = Scale(rij, ITerm);
 
-                       particleA.velocity = Sub(particleA.velocity, Scale(I, 0.5));
-                       particleB.velocity = Add(particleB.velocity, Scale(I, 0.5));
+                        particleA.velocity = Sub(particleA.velocity, Scale(I, 0.5));
+                        particleB.velocity = Add(particleB.velocity, Scale(I, 0.5));
                     }
                 }
             }
@@ -191,7 +212,9 @@ class Simulation {
             let position = this.particles[i].position;
             let color = this.particles[i].color;
             DrawUtils.drawPoint(position, 3, color);
-
+        }
+        for(let i=0; i<this.particleEmitters.length;i++){
+            this.particleEmitters[i].draw();
         }
     }
 }
