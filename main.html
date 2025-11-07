@@ -22,6 +22,9 @@
     <script src="src/fluidHashGrid.js"></script>
     <script src="src/particleEmitter.js"></script>
     <script src="src/spring.js"></script>
+    <script src="shapes/shape.js"></script>
+    <script src="shapes/circle.js"></script>
+    <script src="shapes/polygon.js"></script>
 
     <script>
         var canvas = document.getElementById("canvas");
@@ -64,6 +67,9 @@
                 y: e.clientY - rect.top
             };
         }
+        function onKeyDown(e){
+            playground.onKeyDown(e.keyCode);
+        }
 
         canvas.addEventListener('mousemove',function(e){
             let mouse = getMousePos(canvas,event);
@@ -77,6 +83,8 @@
         canvas.addEventListener('mouseup',function(e){
             playground.onMouseUp(e.button);
         }, false);
+        window.addEventListener('keydown', onKeyDown);
+
     </script>
 </body>
 

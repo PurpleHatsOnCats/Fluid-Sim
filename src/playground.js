@@ -2,6 +2,8 @@ class Playground {
     constructor() {
         this.simulation = new Simulation();
         this.mousePos = Vector2.Zero();
+        this.lastMousePos = Vector2.Zero();
+        this.selectedShape = null;
     }
 
     update(dt) {
@@ -18,19 +20,31 @@ class Playground {
         // DrawUtils.drawText(new Vector2(300,300), 20, "white", "Hello World!");
     }
     onMouseMove(position) {
-        console.log("Mouse moved to: " + position.x + ", " + position.y);
+        this.lastMousePos = this.mousePos.Cpy();
         this.mousePos = position;
-    }
 
-    onMouseDown(button) {
-        console.log("Mouse button pressed: " + button);
-
-        if(button == 0){
-            this.simulation.rotate = !this.simulation.rotate;
+        if (this.selectedShape) {
+            let delta = Sub(this.mousePos, this.lastMousePos);
+            this.selectedShape.moveBy(delta);
         }
     }
 
+    onMouseDown(button) {
+
+        if (button === 0) {
+            this.selectedShape = this.simulation.getShapeAt(this.mousePos);
+        }
+
+    }
+
     onMouseUp(button) {
-        console.log("Mouse button released: " + button);
+        if (button === 0) {
+            this.selectedShape = null;
+        }
+    }
+
+    onKeyDown(key) {
+        console.log("Key pressed: " + key);
+        this.simulation.rotate = !this.simulation.rotate;
     }
 }

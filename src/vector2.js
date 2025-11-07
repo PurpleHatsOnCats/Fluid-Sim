@@ -22,7 +22,7 @@ class Vector2{
     }
 
     Dot(vec){
-        return this.x * vec.x + this.y + vec.y;
+        return this.x * vec.x + this.y * vec.y;
     }
 
     Log(){

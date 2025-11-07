@@ -2,24 +2,25 @@ class Simulation {
     constructor() {
         this.particles = [];
         this.particleEmitters = []
+        this.shapes = [];
         this.springs = new Map();
 
-        this.AMOUNT_PARTICLES = 100;
+        this.AMOUNT_PARTICLES = 300;
         this.VELOCITY_DAMPING = 0.99;
         this.GRAVITY = new Vector2(0, 1);
-        this.REST_DESNITY = 10;
-        this.K_NEAR = 3;
-        this.K = 0.5;
-        this.INTERACTION_RADIUS = 25;
+        this.REST_DESNITY = 15;
+        this.K_NEAR = 3; 
+        this.K = 0.7;
+        this.INTERACTION_RADIUS = 35;
 
         // viscouse parameter
-        this.SIGMA = 0.00;
-        this.BETA = 0.00;
+        this.SIGMA = 0.1;
+        this.BETA = 0.1;
 
         // plasticity parameters
         this.GAMMA = 0.3;
         this.PLASTICITY = 0.7;
-        this.SPRING_STIFFNESS = 0.4;
+        this.SPRING_STIFFNESS = 0.8;
 
         this.fluidHashGrid = new FluidHashGrid(this.INTERACTION_RADIUS);
         this.instantiateParticles();
@@ -27,18 +28,36 @@ class Simulation {
 
         this.emitter = this.createParticleEmitter(
             new Vector2(canvas.width / 2, 400), // pos
-            new Vector2(0, -1), // dir n
+            new Vector2(0, -1), // dir
             30,
             1,
             5,
             20
         );
+        let circle = new Circle(new Vector2(200,400,),100,"orange")
+        let polygon = new Polygon([
+            new Vector2(600,600),
+            new Vector2(800,600),
+            new Vector2(800,700),
+            new Vector2(600,700)
+        ],"orange");
+        this.shapes.push(circle);
+        this.shapes.push(polygon);
     }
 
     createParticleEmitter(position, direction, size, spawnInterval, amount, velocity) {
         let emitter = new ParticleEmitter(position, direction, size, spawnInterval, amount, velocity);
         this.particleEmitters.push(emitter);
         return emitter;
+    }
+
+    getShapeAt(pos){
+        for(let i=0; i < this.shapes.length;i++){
+            if(this.shapes[i].isPointInside(pos)){
+                return this.shapes[i];
+            }
+        }
+        return null;
     }
 
     instantiateParticles() {
@@ -79,7 +98,7 @@ class Simulation {
 
         this.applyGravity(dt);
 
-        this.viscosity(dt);
+        //this.viscosity(dt);
 
         this.predictPositions(dt);
 
@@ -293,6 +312,8 @@ class Simulation {
             let color = this.particles[i].color;
             DrawUtils.drawPoint(position, 3, color);
         }
-        
+        for (let i = 0; i < this.shapes.length; i++) {
+            this.shapes[i].draw();
+        }
     }
 }
