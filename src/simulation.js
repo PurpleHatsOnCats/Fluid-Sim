@@ -5,42 +5,45 @@ class Simulation {
         this.shapes = [];
         this.springs = new Map();
 
-        this.AMOUNT_PARTICLES = 300;
+        this.AMOUNT_PARTICLES = 150;
+        this.MAX_PARTICLES = 10000;
         this.VELOCITY_DAMPING = 0.99;
         this.GRAVITY = new Vector2(0, 1);
-        this.REST_DESNITY = 15;
-        this.K_NEAR = 3; 
-        this.K = 0.7;
-        this.INTERACTION_RADIUS = 35;
+
+        // relaxation parameters
+        this.REST_DESNITY = 50;
+        this.K_NEAR = 35;
+        this.K = 0.9;
+        this.INTERACTION_RADIUS = 50;
 
         // viscouse parameter
         this.SIGMA = 0.1;
         this.BETA = 0.1;
 
         // plasticity parameters
-        this.GAMMA = 0.3;
-        this.PLASTICITY = 0.7;
-        this.SPRING_STIFFNESS = 0.8;
+        this.GAMMA = 0.5;
+        this.PLASTICITY = 0.01;
+        this.SPRING_STIFFNESS = 0.5;
 
         this.fluidHashGrid = new FluidHashGrid(this.INTERACTION_RADIUS);
         this.instantiateParticles();
         this.fluidHashGrid.initialize(this.particles);
 
         this.emitter = this.createParticleEmitter(
-            new Vector2(canvas.width / 2, 400), // pos
+            new Vector2(canvas.width / 2, 200), // pos
             new Vector2(0, -1), // dir
             30,
             1,
             5,
             20
         );
-        let circle = new Circle(new Vector2(200,400,),100,"orange")
+        let circle = new Circle(new Vector2(200, 400,), 100, "orange")
         let polygon = new Polygon([
-            new Vector2(600,600),
-            new Vector2(800,600),
-            new Vector2(800,700),
-            new Vector2(600,700)
-        ],"orange");
+            new Vector2(600, 600),
+            new Vector2(800, 600),
+            new Vector2(800, 700),
+            new Vector2(600, 700)
+        ], "orange");
         this.shapes.push(circle);
         this.shapes.push(polygon);
     }
@@ -51,9 +54,9 @@ class Simulation {
         return emitter;
     }
 
-    getShapeAt(pos){
-        for(let i=0; i < this.shapes.length;i++){
-            if(this.shapes[i].isPointInside(pos)){
+    getShapeAt(pos) {
+        for (let i = 0; i < this.shapes.length; i++) {
+            if (this.shapes[i].isPointInside(pos)) {
                 return this.shapes[i];
             }
         }
@@ -61,7 +64,7 @@ class Simulation {
     }
 
     instantiateParticles() {
-        let padding = 10;
+        let padding = this.INTERACTION_RADIUS/3;
         let offsetAll = new Vector2(300, 100);
 
         let xParticles = Math.sqrt(this.AMOUNT_PARTICLES);
@@ -89,12 +92,12 @@ class Simulation {
     }
 
     update(dt) {
-        this.neighbourSearch();
-
         if (this.rotate) {
             this.emitter.spawn(dt, this.particles);
             this.emitter.rotate(0.01);
         }
+
+        this.neighbourSearch();
 
         this.applyGravity(dt);
 
@@ -102,8 +105,8 @@ class Simulation {
 
         this.predictPositions(dt);
 
-        this.adjustSprings(dt);
-        this.springDisplacement(dt);
+        //this.adjustSprings(dt);
+        //this.springDisplacement(dt);
 
         this.doubleDensityRelaxation(dt)
 
@@ -123,14 +126,14 @@ class Simulation {
                 }
 
                 // Prevent making too many springs
-                let springId = i + neighbours[j] * this.particles.length;
+                let springId = i + neighbours[j] * this.MAX_PARTICLES;
                 if (this.springs.has(springId)) {
                     continue;
                 }
                 let rij = Sub(particleB.position, particleA.position);
                 let q = rij.Length() / this.INTERACTION_RADIUS;
                 if (q < 1) {
-                    let newSpring = new Spring(i, neighbours[j], this.INTERACTION_RADIUS);
+                    let newSpring = new Spring(i, neighbours[j], this.INTERACTION_RADIUS/2);
                     this.springs.set(springId, newSpring);
                 }
             }
@@ -171,7 +174,7 @@ class Simulation {
             }
 
             rij.Normalize();
-            let displacementTerm = dtSquared * this.SPRING_STIFFNESS * 
+            let displacementTerm = dtSquared * this.SPRING_STIFFNESS *
                 (1 - spring.length / this.INTERACTION_RADIUS) * (spring.length - distance);
 
             rij = Scale(rij, displacementTerm * 0.5);
@@ -315,5 +318,11 @@ class Simulation {
         for (let i = 0; i < this.shapes.length; i++) {
             this.shapes[i].draw();
         }
+        // Draw Springs
+        for (let [key, spring] of this.springs) {
+            DrawUtils.drawLine(this.particles[spring.particleAIdx].position,this.particles[spring.particleBIdx].position,"rgba(255,0,255,0.02)");
+            
+        }
+    
     }
 }

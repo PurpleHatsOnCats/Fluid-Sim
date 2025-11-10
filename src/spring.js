@@ -3,6 +3,5 @@ class Spring{
         this.particleAIdx = particleAIdx;
         this.particleBIdx = particleBIdx;
         this.length = length;
-
     }
 }

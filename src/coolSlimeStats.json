@@ -1,0 +1,24 @@
+{
+    "slimes":[
+        {
+        "name": "rewrapping",
+        "REST_DESNITY":  15,
+        "K_NEAR" : 15,
+        "K": 1.0,
+        "INTERACTION_RADIUS": 100,
+        "GAMMA": -0.5,
+        "PLASTICITY": 0.01,
+        "SPRING_STIFFNESS": 0.5
+        },
+        {
+        "name": "star",
+        "REST_DESNITY":  100,
+        "K_NEAR" : 15,
+        "K": 1.0,
+        "INTERACTION_RADIUS": 20,
+        "GAMMA": -0.5,
+        "PLASTICITY": 0.01,
+        "SPRING_STIFFNESS": 0.5
+        }
+    ]
+}
