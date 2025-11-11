@@ -7,14 +7,18 @@
             padding: 0;
             margin: 0;
         }
-        canvas {display: block; margin: 20px auto;}
-        body {background: #242321;}
+        canvas, #input {display: block; margin: 20px auto;}
+        body {background: #585755;}
     </style>
     <script type="module" src="src/main.js"></script>
 </head>
 
 <body>
-    <canvas id="canvas" width="1280px" height="720px" style="border:solid 1px black"></canvas>    
+    <canvas id="canvas" width="1280px" height="720px" style="border:solid 1px black"></canvas>
+    <div id="input">
+        <input type="range" id="plasticity" name="plasticity" min="0" max="100" value="50">
+    </div>
+    
 </body>
 
 </html>
