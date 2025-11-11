@@ -1,4 +1,5 @@
-class Particle{
+import { Vector2 } from "./vector2.js";
+export class Particle{
     constructor(position){
         this.position = position;
         this.prevPosition = position;

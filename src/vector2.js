@@ -1,4 +1,4 @@
-class Vector2{
+export class Vector2{
     constructor(x,y){
         this.x = x;
         this.y = y;
@@ -37,12 +37,14 @@ class Vector2{
     }
 }
 
-function Add(vecA, vecB){
+const Add = (vecA, vecB) => {
     return new Vector2(vecA.x + vecB.x, vecA.y + vecB.y)
 }
-function Sub(vecA, vecB){
+const Sub = (vecA, vecB) => {
     return new Vector2(vecA.x - vecB.x, vecA.y - vecB.y)
 }
-function Scale(vec, scalar){
+const Scale = (vec, scalar) => {
     return new Vector2(vec.x * scalar, vec.y * scalar);
 }
+
+export {Add, Sub, Scale};

@@ -1,4 +1,4 @@
-class Spring{
+export class Spring{
     constructor(particleAIdx, particleBIdx, length){
         this.particleAIdx = particleAIdx;
         this.particleBIdx = particleBIdx;

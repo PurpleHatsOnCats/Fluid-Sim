@@ -1,4 +1,4 @@
-class FluidHashGrid {
+export class FluidHashGrid {
     constructor(cellSize) {
         this.cellSize = cellSize;
         this.hashMap = new Map();

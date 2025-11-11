@@ -1,4 +1,11 @@
-class Simulation {
+import { Add, Sub, Scale, Vector2 } from "./vector2.js";
+import {Spring} from "./spring.js"
+import { ParticleEmitter } from "./particleEmitter.js";
+import {Particle} from "./particle.js";
+import { FluidHashGrid } from "./fluidHashGrid.js";
+import {Circle, Polygon} from "./shapes.js";
+import { DrawUtils } from "./drawUtils.js";
+export class Simulation {
     constructor() {
         this.particles = [];
         this.particleEmitters = []
@@ -48,13 +55,13 @@ class Simulation {
         this.shapes.push(polygon);
     }
 
-    createParticleEmitter(position, direction, size, spawnInterval, amount, velocity) {
+    createParticleEmitter(position, direction, size, spawnInterval, amount, velocity){
         let emitter = new ParticleEmitter(position, direction, size, spawnInterval, amount, velocity);
         this.particleEmitters.push(emitter);
         return emitter;
     }
 
-    getShapeAt(pos) {
+    getShapeAt(pos){
         for (let i = 0; i < this.shapes.length; i++) {
             if (this.shapes[i].isPointInside(pos)) {
                 return this.shapes[i];
@@ -63,7 +70,7 @@ class Simulation {
         return null;
     }
 
-    instantiateParticles() {
+    instantiateParticles(){
         let padding = this.INTERACTION_RADIUS/3;
         let offsetAll = new Vector2(300, 100);
 
@@ -86,12 +93,12 @@ class Simulation {
         }
     }
 
-    neighbourSearch(mousePos) {
+    neighbourSearch(mousePos){
         this.fluidHashGrid.clearGrid();
         this.fluidHashGrid.mapParticlesToCell();
     }
 
-    update(dt) {
+    update(dt){
         if (this.rotate) {
             this.emitter.spawn(dt, this.particles);
             this.emitter.rotate(0.01);
@@ -115,7 +122,7 @@ class Simulation {
         this.computeNextVelocity(dt);
     }
 
-    adjustSprings(dt) {
+    adjustSprings(dt){
         for (let i = 0; i < this.particles.length; i++) {
             let neighbours = this.fluidHashGrid.getNeighbourOfParticleId(i);
             let particleA = this.particles[i];
@@ -159,7 +166,7 @@ class Simulation {
         }
     }
 
-    springDisplacement(dt) {
+    springDisplacement(dt){
         let dtSquared = dt * dt;
 
         for (let [key, spring] of this.springs) {
@@ -184,7 +191,7 @@ class Simulation {
         }
     }
 
-    viscosity(dt) {
+    viscosity(dt){
         for (let i = 0; i < this.particles.length; i++) {
             let neighbours = this.fluidHashGrid.getNeighbourOfParticleId(i);
             let particleA = this.particles[i];
@@ -215,7 +222,7 @@ class Simulation {
         }
     }
 
-    doubleDensityRelaxation(dt) {
+    doubleDensityRelaxation(dt){
         for (let i = 0; i < this.particles.length; i++) {
             let density = 0;
             let densityNear = 0;
@@ -261,13 +268,13 @@ class Simulation {
         }
     }
 
-    applyGravity(dt) {
+    applyGravity(dt){
         for (let i = 0; i < this.particles.length; i++) {
             this.particles[i].velocity = Add(this.particles[i].velocity, Scale(this.GRAVITY, dt));
         }
     }
 
-    predictPositions(dt) {
+    predictPositions(dt){
         for (let i = 0; i < this.particles.length; i++) {
             this.particles[i].prevPosition = this.particles[i].position.Cpy();
             let positionDelta = Scale(this.particles[i].velocity, dt * this.VELOCITY_DAMPING);

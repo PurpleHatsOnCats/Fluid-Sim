@@ -1,4 +1,6 @@
-class Playground {
+import { Simulation } from "./simulation.js";
+import { Vector2, Sub} from "./vector2.js";
+export class Playground {
     constructor() {
         this.simulation = new Simulation();
         this.mousePos = Vector2.Zero();

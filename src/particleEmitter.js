@@ -1,4 +1,7 @@
-class ParticleEmitter {
+import { DrawUtils } from "./drawUtils.js";
+import { Add, Sub, Scale } from "./vector2.js";
+import { Particle } from "./particle.js";
+export class ParticleEmitter {
     constructor(position, direction, size, spawnInterval, amount, velocity) {
         this.position = position;
         this.direction = direction;
