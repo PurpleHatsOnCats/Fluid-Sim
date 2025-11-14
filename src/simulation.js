@@ -12,25 +12,25 @@ export class Simulation {
         this.shapes = [];
         this.springs = new Map();
 
-        this.AMOUNT_PARTICLES = 150;
+        this.AMOUNT_PARTICLES = 1000;
         this.MAX_PARTICLES = 10000;
         this.VELOCITY_DAMPING = 0.99;
         this.GRAVITY = new Vector2(0, 1);
 
         // relaxation parameters
-        this.REST_DESNITY = 50;
-        this.K_NEAR = 35;
-        this.K = 0.9;
-        this.INTERACTION_RADIUS = 50;
+        this.REST_DESNITY = 5;
+        this.K_NEAR = 10;
+        this.K = 0.7;
+        this.INTERACTION_RADIUS = 10;
 
         // viscouse parameter
-        this.SIGMA = 0.1;
-        this.BETA = 0.1;
+        this.SIGMA = 0.01;
+        this.BETA = 0.02;
 
         // plasticity parameters
-        this.GAMMA = 0.5;
-        this.PLASTICITY = 0.01;
-        this.SPRING_STIFFNESS = 0.5;
+        this.GAMMA = 0.2;
+        this.PLASTICITY = 0.7;
+        this.SPRING_STIFFNESS = 0.3;
 
         this.fluidHashGrid = new FluidHashGrid(this.INTERACTION_RADIUS);
         this.instantiateParticles();
@@ -108,7 +108,7 @@ export class Simulation {
 
         this.applyGravity(dt);
 
-        //this.viscosity(dt);
+        this.viscosity(dt);
 
         this.predictPositions(dt);
 
@@ -117,9 +117,22 @@ export class Simulation {
 
         this.doubleDensityRelaxation(dt)
 
+        this.handleOneWayCoupling();
         this.worldBoundary();
 
         this.computeNextVelocity(dt);
+    }
+
+    handleOneWayCoupling(){
+        for(let i=0; i< this.particles.length; i++){
+            let particle = this.particles[i];
+            for(let j = 0; j<this.shapes.length;j++){
+                let dir = this.shapes[j].getDirectionOut(particle.position);
+                if(dir != null){
+                    particle.position = Add(particle.position, dir);
+                }
+            }
+        }
     }
 
     adjustSprings(dt){
@@ -314,6 +327,9 @@ export class Simulation {
     }
 
     draw() {
+        for (let i = 0; i < this.shapes.length; i++) {
+            this.shapes[i].draw();
+        }
         for (let i = 0; i < this.particleEmitters.length; i++) {
             this.particleEmitters[i].draw();
         }
@@ -322,9 +338,7 @@ export class Simulation {
             let color = this.particles[i].color;
             DrawUtils.drawPoint(position, 3, color);
         }
-        for (let i = 0; i < this.shapes.length; i++) {
-            this.shapes[i].draw();
-        }
+        
         // Draw Springs
         for (let [key, spring] of this.springs) {
             DrawUtils.drawLine(this.particles[spring.particleAIdx].position,this.particles[spring.particleBIdx].position,"rgba(255,0,255,0.02)");
