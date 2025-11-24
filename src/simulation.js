@@ -12,16 +12,16 @@ export class Simulation {
         this.shapes = [];
         this.springs = new Map();
 
-        this.AMOUNT_PARTICLES = 1000;
+        this.AMOUNT_PARTICLES = 100;
         this.MAX_PARTICLES = 10000;
         this.VELOCITY_DAMPING = 0.99;
-        this.GRAVITY = new Vector2(0, 1);
+        this.GRAVITY = new Vector2(0, 0.2);
 
         // relaxation parameters
         this.REST_DESNITY = 5;
-        this.K_NEAR = 10;
-        this.K = 0.7;
-        this.INTERACTION_RADIUS = 10;
+        this.K_NEAR = 1;
+        this.K = 1;
+        this.INTERACTION_RADIUS = 5;
 
         // viscouse parameter
         this.SIGMA = 0.01;
@@ -72,7 +72,7 @@ export class Simulation {
 
     instantiateParticles(){
         let padding = this.INTERACTION_RADIUS/3;
-        let offsetAll = new Vector2(300, 100);
+        let offsetAll = new Vector2(300, 600);
 
         let xParticles = Math.sqrt(this.AMOUNT_PARTICLES);
         let yParticles = xParticles;
@@ -108,7 +108,7 @@ export class Simulation {
 
         this.applyGravity(dt);
 
-        this.viscosity(dt);
+        //this.viscosity(dt);
 
         this.predictPositions(dt);
 

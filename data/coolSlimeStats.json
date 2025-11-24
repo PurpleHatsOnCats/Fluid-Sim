@@ -19,6 +19,26 @@
         "GAMMA": -0.5,
         "PLASTICITY": 0.01,
         "SPRING_STIFFNESS": 0.5
+        },
+        {
+        "name": "Water",
+        "REST_DESNITY": 5,
+        "K_NEAR" : 10,
+        "K": 0.7,
+        "INTERACTION_RADIUS": 10,
+        "GAMMA": 0,
+        "PLASTICITY": 0,
+        "SPRING_STIFFNESS": 0
+        },
+        {
+        "name": "Slime",
+        "REST_DESNITY": 30,
+        "K_NEAR" : 5,
+        "K": 0.5,
+        "INTERACTION_RADIUS": 30,
+        "GAMMA": 0,
+        "PLASTICITY": 0,
+        "SPRING_STIFFNESS": 0
         }
     ]
 }
