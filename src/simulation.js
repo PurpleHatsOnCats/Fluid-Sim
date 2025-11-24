@@ -93,7 +93,7 @@ export class Simulation {
         }
     }
 
-    neighbourSearch(mousePos){
+    neighbourSearch(){
         this.fluidHashGrid.clearGrid();
         this.fluidHashGrid.mapParticlesToCell();
     }
